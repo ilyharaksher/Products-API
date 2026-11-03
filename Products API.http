@@ -1,0 +1,10 @@
+@Products_API_HostAddress = http://localhost:5158
+
+POST {{Products_API_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+    "Name": "iPhone 17",
+    "Category": "Electronics",
+    "manufactureremail": "example@exp.com"
+}
