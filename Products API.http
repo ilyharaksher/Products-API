@@ -6,5 +6,11 @@ Content-Type: application/json
 {
     "Name": "iPhone 17",
     "Category": "Electronics",
-    "manufactureremail": "example@exp.com"
+    "manufactureremail": "exampleexp.com"
 }
+
+###
+GET {{Products_API_HostAddress}}/api/products
+
+###
+GET {{Products_API_HostAddress}}/api/products/1

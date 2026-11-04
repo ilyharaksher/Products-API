@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Products_API.Models;
 using Products_API.DTO;
+using Products_API.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Products_API.Controllers
 {
@@ -8,20 +10,65 @@ namespace Products_API.Controllers
     [Route("api/products")]
     public class ProductController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
+
+        public ProductController(ApplicationDbContext applicationDbContext)
+        {
+            _context = applicationDbContext;
+        }
+
+
         //TODO: Implement interaction with the database, dbcontext, efcore via constructors and dependency injection.
 
         [HttpGet]
-        public IActionResult GetProducts()
+        public async Task<IActionResult> GetProducts()
         {
             // TODO: add interaction with the database to retrieve products and return them as a list of ProductResponseDTO.
-            return Ok();
+
+            var products = await _context.Products.Select(p => new ProductResponseDTO
+            {
+                Name = p.Name,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                Category = p.Category,
+                ManufacturerEmail = p.ManufacturerEmail,
+                ManufacturerPhone = p.ManufacturerPhone
+            })
+            .ToListAsync();
+            if (products.Any())
+            {
+                return Ok(new
+                {
+                    Message = "Here's all the products",
+                    Products = products
+                });
+            }
+            else
+            {
+                return Ok(new { Message = "There are no products... yet" });
+            }
+
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetProductById(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
             // TODO: add interaction with the database to retrieve a product by ID and return it as a ProductResponseDTO.
-            return Ok();
+
+            var product = await _context.Products.FindAsync(id);
+
+            if (product is not null)
+            {
+                return Ok(new
+                {
+                    Message = "Here's the product you're looking for",
+                    Result = product
+                });
+            }
+            else
+            {
+                return NotFound(new {Message = "Not found"});
+            }
         }
 
         [HttpGet("category/{category}")]
