@@ -16,7 +16,8 @@ Content-Type: application/json
 {
     "Name": "huweiweo",
     "Category": "Electronics",
-    "manufactureremail": "chinachina@exp.us"
+    "manufactureremail": "chinachina@exp.us",
+    "Price": "Hi"
 }
 
 ###
@@ -26,3 +27,6 @@ Content-Type: application/json
 {
     "Quantity": "2"
 }
+
+###
+DELETE {{Products_API_HostAddress}}/api/products/3

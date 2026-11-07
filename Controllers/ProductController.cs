@@ -140,7 +140,7 @@ namespace Products_API.Controllers
                 Quantity = newProduct.Quantity,
                 Category = newProduct.Category,
                 ManufacturerEmail = newProduct.ManufacturerEmail,
-                ManufacturerPhone = newProduct.Name
+                ManufacturerPhone = newProduct.ManufacturerPhone
             };
 
             return CreatedAtAction(
@@ -176,7 +176,6 @@ namespace Products_API.Controllers
                         product.Quantity = dto.Quantity;
                     }
 
-                    _context.Products.Update(product);
                     await _context.SaveChangesAsync();
 
                     return Ok(new
@@ -199,10 +198,22 @@ namespace Products_API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             // TODO: add interaction with the database to delete a product by ID.
-            return Ok();
+
+            var product = await _context.Products.FindAsync(id);
+
+            if (product is null)
+            {
+                return NotFound(new { Message = "Not found, cannot Delete" });
+            }
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Product deleted successfully" });
+
         }
     }
 }
