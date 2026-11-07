@@ -1,16 +1,28 @@
 @Products_API_HostAddress = http://localhost:5158
 
+###
+GET {{Products_API_HostAddress}}/api/products/
+
+###
+GET {{Products_API_HostAddress}}/api/products/3
+
+###
+GET {{Products_API_HostAddress}}/api/products/category/telifoni
+
+###
 POST {{Products_API_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-    "Name": "iPhone 17",
+    "Name": "huweiweo",
     "Category": "Electronics",
-    "manufactureremail": "exampleexp.com"
+    "manufactureremail": "chinachina@exp.us"
 }
 
 ###
-GET {{Products_API_HostAddress}}/api/products
+PATCH {{Products_API_HostAddress}}/api/products/3
+Content-Type: application/json
 
-###
-GET {{Products_API_HostAddress}}/api/products/1
+{
+    "Quantity": "2"
+}

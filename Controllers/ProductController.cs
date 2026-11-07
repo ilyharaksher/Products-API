@@ -55,7 +55,18 @@ namespace Products_API.Controllers
         {
             // TODO: add interaction with the database to retrieve a product by ID and return it as a ProductResponseDTO.
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                .Where(p => p.Id == id)
+                .Select(p => new ProductResponseDTO
+                {
+                    Name = p.Name,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    Category = p.Category,
+                    ManufacturerEmail = p.ManufacturerEmail,
+                    ManufacturerPhone = p.ManufacturerPhone
+                })
+                .FirstOrDefaultAsync();
 
             if (product is not null)
             {
@@ -67,19 +78,44 @@ namespace Products_API.Controllers
             }
             else
             {
-                return NotFound(new {Message = "Not found"});
+                return NotFound(new { Message = "Not found" });
             }
         }
 
         [HttpGet("category/{category}")]
-        public IActionResult GetProductsByCategory(string category)
+        public async Task<IActionResult> GetProductsByCategory(string category)
         {
             // TODO: add interaction with the database to retrieve products by category and return them as a list of ProductResponseDTO.
-            return Ok();
+
+            var products = await _context.Products
+                .Where(p => p.Category == category)
+                .Select(p => new ProductResponseDTO
+                {
+                    Name = p.Name,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    Category = p.Category,
+                    ManufacturerEmail = p.ManufacturerEmail,
+                    ManufacturerPhone = p.ManufacturerPhone
+                })
+                .ToListAsync();
+
+            if (products.Any())
+            {
+                return Ok(new
+                {
+                    Message = "Here's all the products within the wanted category",
+                    Products = products
+                });
+            }
+            else
+            {
+                return NotFound(new { Message = "There are no products in this category yet" });
+            }
         }
 
         [HttpPost]
-        public IActionResult CreateProduct([FromBody] CreateProductDTO createProductDTO)
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO createProductDTO)
         {
             // TODO: add interaction with the database to create a new product using the data from createProductDTO.
 
@@ -93,22 +129,73 @@ namespace Products_API.Controllers
                 ManufacturerPhone = createProductDTO.ManufacturerPhone
             };
 
+            _context.Add(newProduct);
+
+            await _context.SaveChangesAsync();
+
+            var response = new ProductResponseDTO
+            {
+                Name = newProduct.Name,
+                Price = newProduct.Price,
+                Quantity = newProduct.Quantity,
+                Category = newProduct.Category,
+                ManufacturerEmail = newProduct.ManufacturerEmail,
+                ManufacturerPhone = newProduct.Name
+            };
+
             return CreatedAtAction(
                 nameof(GetProductById),
                 new { id = newProduct.Id },
                 new
                 {
                     Message = "Product created successfully",
-                    Product = newProduct
+                    Product = response
                 }
-                );
+            );
         }
 
         [HttpPatch("{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] UpdateProductDTO updateProductDTO)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductDTO dto)
         {
             // TODO: add interaction with the database to update an existing product using the data from updateProductDTO.
-            return Ok();
+            // Early return approach is more preferable
+
+            var product = await _context.Products.FindAsync(id);
+
+            if (product is not null)
+            {
+                if (dto.Price is not null || dto.Quantity is not null)
+                {
+                    if (dto.Price is not null)
+                    {
+                        product.Price = dto.Price;
+                    }
+
+                    if (dto.Quantity is not null)
+                    {
+                        product.Quantity = dto.Quantity;
+                    }
+
+                    _context.Products.Update(product);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        Message = "Object updated successfully!"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        Message = "At least one field must be provided for update."
+                    });
+                }
+            }
+            else
+            {
+                return NotFound(new { Message = "Not found, cannot Update" });
+            }
         }
 
         [HttpDelete("{id}")]
